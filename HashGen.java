@@ -3,51 +3,35 @@ import java.util.Random;
 
 /**
  * Created by Plagueis on 10/7/2015.
+ * Optimizations by Russ 'trdwll' Treadwell on 10/21/2015.
  */
 public class HashGen {
     public static void main(String[] args) throws Exception {
-        if (args.length == 0){
-            System.out.println("Usage: <hash algorithm / help> <string>");
-        } else if (args[0].equalsIgnoreCase("help")) {
-            System.out.println("Usage: <hash algorithm / help> <string>");
-            System.out.println("Available Algorithms");
-            System.out.println("MD2");
-            System.out.println("MD5");
-            System.out.println("SHA1");
-            System.out.println("SHA256");
-            System.out.println("SHA384");
-            System.out.println("SHA512");
-            System.out.println("vb3 - vBulletin < v3.8.5");
-            System.out.println("vb4 - vBulletin > v3.8.5");
-            System.out.println("ib - IPB / MyBB");
-        } else if (args.length == 2) {
-            String algorithm = args[0];
-            if(algorithm.equalsIgnoreCase("sha256") || algorithm.equalsIgnoreCase("sha384") || algorithm.equalsIgnoreCase("sha512")){
-                algorithm = algorithm.replace("sha", "sha-");
-            }
-            String password = args[1];
-            try {
-                System.out.println("MD5(" + password + ") is " + hash(password, algorithm));
-            } catch (Exception e) {
-                if(algorithm.equalsIgnoreCase("vb3")){
-                    String salt = generateString(3);
-                    String stage1 = hash(password, "MD5");
-                    String stage2 = hash(stage1 + salt, "MD5");
-                    System.out.println("md5(md5(" + password + ").$salt) is " + stage2 + ":" + salt);
-                } else if(algorithm.equalsIgnoreCase("vb4")){
-                    String salt = generateString(30);
-                    String stage1 = hash(password, "MD5");
-                    String stage2 = hash(stage1 + salt, "MD5");
-                    System.out.println("md5(md5(" + password + ").$salt) is " + stage2 + ":" + salt);
-                } else if(algorithm.equalsIgnoreCase("ib")){
-                    String salt = generateString(5);
-                    String stage1 = hash(salt, "MD5");
-                    String stage2 = hash(password, "MD5");
-                    String stage3 = hash(stage1 + stage2, "MD5");
-                    System.out.println("md5(md5($salt).md5("+password+")) is " + stage3 + ":" + salt);
-                } else {
-                    System.out.println("Invalid Algorithm!");
-                    System.exit(0);
+        if (args.length == 0 || args[0].equalsIgnoreCase("help")) {
+            System.out.println("Usage: <hash algorithm / help> <string>\n\nAvailable Algorithms: \nMD2\nMD5\nSHA1\nSHA256\nSHA384\nSHA512\nvb3 - vBulletin < v3.8.5\nvb4 - vBulletin > v3.8.5\nib - IPB / MyBB");
+        } else {
+            if (args.length == 2) {
+                String algorithm = args[0];
+                if (algorithm.equalsIgnoreCase("sha256") || algorithm.equalsIgnoreCase("sha384") || algorithm.equalsIgnoreCase("sha512")) {
+                    algorithm = algorithm.replace("sha", "sha-");
+                }
+                String password = args[1];
+                try {
+                    System.out.println("MD5(" + password + ") is " + hash(password, algorithm));
+                } catch (Exception e) {
+                    if (algorithm.equalsIgnoreCase("vb3")) {
+                        String salt = generateString(3);
+                        System.out.println("md5(md5(" + password + ").$salt) is " + hash(hash(password, "MD5") + salt, "MD5") + ":" + salt);
+                    } else if (algorithm.equalsIgnoreCase("vb4")) {
+                        String salt = generateString(30);
+                        System.out.println("md5(md5(" + password + ").$salt) is " + hash(hash(password, "MD5") + salt, "MD5") + ":" + salt);
+                    } else if (algorithm.equalsIgnoreCase("ib")) {
+                        String salt = generateString(5);
+                        System.out.println("md5(md5($salt).md5(" + password + ")) is " + hash(hash(salt, "MD5") + hash(password, "MD5"), "MD5") + ":" + salt);
+                    } else {
+                        System.out.println("Invalid Algorithm!");
+                        System.exit(0);
+                    }
                 }
             }
         }
